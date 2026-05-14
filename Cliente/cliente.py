@@ -1,6 +1,7 @@
 import socket
 import cv2
 import numpy as np
+import os
 
 
 class Cliente():
@@ -11,18 +12,18 @@ class Cliente():
         """
         Construtor da classe Cliente
         """
-        self.__server_ip = server_ip
-        self.__port = port
-        self.__tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._server_ip = server_ip
+        self._port = port
+        self._tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     
     def start(self):
         """
         Método que inicializa a execução do Cliente
         """
-        endpoint = (self.__server_ip,self.__port)
+        endpoint = (self._server_ip,self._port)
         try:
-            self.__tcp.connect(endpoint)
+            self._tcp.connect(endpoint)
             print("Conexão realizada com sucesso!")
             self._method()
         except:
@@ -42,10 +43,10 @@ class Cliente():
                     continue
                 elif msg == 'x':
                     break
-                self.__tcp.send(bytes(msg,'ascii'))
-                resp = self.__tcp.recv(1024)
+                self._tcp.send(bytes(msg,'ascii'))
+                resp = self._tcp.recv(1024)
                 print("= ",resp.decode('ascii'))
-            self.__tcp.close()
+            self._tcp.close()
         except Exception as e:
             print("Erro ao realizar comunicação com o servidor", e.args)
 
@@ -69,13 +70,15 @@ class ClientePI(Cliente):
         try:
             caminho_imagem = ''
             while True:
-                caminho_imagem = input("Digite o caminho da imagem: ")
+                caminho_imagem = input("Digite o nome da imagem: ")
+                # caminho_imagem = os.path()
                 if caminho_imagem == '':
                     continue
                 elif caminho_imagem == 'x':
                     break
                 # leitura da imagem
                 img = cv2.imread(caminho_imagem)
+                # img = cv2.imread("Cliente/data/image_0001.jpg")
 
                 # codificação para bytes
                 _, img_bytes = cv2.imencode('.jpg', img) 
@@ -83,22 +86,22 @@ class ClientePI(Cliente):
                 tamanho_da_imagem_codificado = len(img_bytes).to_bytes(4, 'big')
 
                 # Primeiro envia o tamanho da imagem
-                self.__tcp.send(tamanho_da_imagem_codificado)
+                self._tcp.send(tamanho_da_imagem_codificado)
 
                 # Envia então a imagem, a quantidade de byts recebidos pelo
                 # cliente tem que ser a mesma enviada antes, para garantia de
                 # estabilidade
-                self.__tcp.send(img_bytes)
+                self._tcp.send(img_bytes)
 
-                resp_tam_imagem = self.__tcp.recv(1024)
+                resp_tam_imagem = self._tcp.recv(1024)
                 tam = int.from_bytes(resp_tam_imagem, 'big')
 
-                resp_img = self.__tcp.recv(tam)
+                resp_img = self._tcp.recv(tam)
                 
                 img = cv2.imdecode(np.frombuffer(resp_img, np.uint8), cv2.IMREAD_COLOR)
 
                 self._plot(img)
-            self.__tcp.close()
+            self._tcp.close()
         except Exception as e:
             print("Erro ao realizar comunicação com o servidor", e.args)
 

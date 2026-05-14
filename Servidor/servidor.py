@@ -71,7 +71,7 @@ class ServidorPI(Servidor):
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         faces = face_cascade.detectMultiScale(gray, 1.3, 5)
         for (x, y, w, h) in faces:
-            cv2.rectangle(img, (x, y), (x+w, y+h), (0, 255, 0), 2)
+            cv2.rectangle(img, (x, y), (x+w, y+h), (255, 0, 0), 2)
 
 
     def _service(self, con, client):
@@ -90,11 +90,7 @@ class ServidorPI(Servidor):
                 # recebe e decodifica a imagem
                 img_bytes = con.recv(tam)
                 img = cv2.imdecode(np.frombuffer(img_bytes, np.uint8), cv2.IMREAD_COLOR)
-                if len(img) != tam: # verificar codificação d código de erro
-                    print("Err de perca de pacote pelo cliente ",
-                          client, ": ", e.args)
-                    con.send(bytes("Erro", 'ascii'))
-                
+                                    
                 self._process(img)
 
                 _, img_bytes = cv2.imencode('.jpg', img)
@@ -102,9 +98,9 @@ class ServidorPI(Servidor):
                 tamanho_da_imagem_codificado = len(img_bytes).to_bytes(4, 'big')
 
 
-                self.__tcp.send(tamanho_da_imagem_codificado)
+                con.send(tamanho_da_imagem_codificado)
 
-                self.__tcp.send(img_bytes)
+                con.send(img_bytes)
                 print(client, " -> requisição atendida")
             except OSError as e:
                 print("Erro de conexão ", client, ": ", e.args)
