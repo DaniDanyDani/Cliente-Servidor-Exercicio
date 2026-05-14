@@ -1,5 +1,5 @@
-from servidor import Servidor
+from servidor import ServidorPI
 
-serv = Servidor("localhost",9000)
+serv = ServidorPI("localhost",9000)
 serv.start()
 

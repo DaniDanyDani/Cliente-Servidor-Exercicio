@@ -1,4 +1,4 @@
-from cliente import Cliente
+from cliente import ClientePI
 
-c = Cliente("127.0.0.1",9000)
+c = ClientePI("127.0.0.1",9000)
 c.start()
